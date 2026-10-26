@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sneaker Match | Juego de zapatillas</title>
+
+  <style>
+    :root {
+      --fondo: #080b0a;
+      --panel: #111714;
+      --verde: #1707f8;
+      --texto: #f4f7f2;
+      --gris: #fcfbfb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--texto);
+      background:
+        radial-gradient(ellipse at top, #17241b 0%, transparent 60%),
+        var(--fondo);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 22px 7%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #263229;
+    }
+
+    .logo {
+      font-size: 23px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      color: var(--verde);
+    }
+
+    .tag {
+      color: var(--verde);
+      border: 1px solid #426126;
+      padding: 8px 12px;
+      border-radius: 30px;
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    main {
+      width: min(1000px, 92%);
+      margin: 35px auto;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      color: var(--verde);
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 7vw, 65px);
+      line-height: 1;
+      margin: 14px 0;
+      letter-spacing: -3px;
+    }
+
+    h1 span {
+      color: var(--verde);
+    }
+
+    .hero p {
+      color: var(--gris);
+      line-height: 1.6;
+      margin: 12px auto;
+      max-width: 520px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 28px 0 18px;
+    }
+
+    .stat {
+      padding: 17px 8px;
+      background: var(--panel);
+      border: 1px solid #263229;
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .stat small {
+      display: block;
+      color: var(--gris);
+      font-size: 10px;
+      letter-spacing: 1px;
+      margin-bottom: 9px;
+    }
+
+    .stat strong {
+      font-size: 24px;
+    }
+
+    .stat .green {
+      color: var(--verde);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 17px;
+    }
+
+    .difficulties {
+      display: flex;
+      gap: 7px;
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    .difficulty,
+    .restart {
+      cursor: pointer;
+      border: 1px solid #344139;
+      border-radius: 9px;
+      background: #151c17;
+      color: var(--texto);
+      padding: 10px 13px;
+      font-size: 12px;
+      transition: 0.2s;
+    }
+
+    .difficulty.active,
+    .difficulty:hover {
+      background: var(--verde);
+      border-color: var(--verde);
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .restart {
+      background: var(--verde);
+      color: #ffffff;
+      border-color: var(--verde);
+      font-weight: bold;
+    }
+
+    .restart:hover {
+      transform: translateY(-2px);
+    }
+
+    #message {
+      color: var(--gris);
+      font-size: 13px;
+      text-align: center;
+      margin: 15px 0;
+      min-height: 18px;
+    }
+
+    #message.good {
+      color: var(--verde);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      perspective: 1000px;
+    }
+
+    .card {
+      position: relative;
+      height: 155px;
+      min-width: 0;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      perspective: 800px;
+    }
+
+    .card-inner {
+      position: absolute;
+      inset: 0;
+      transform-style: preserve-3d;
+      transition: transform 0.45s ease;
+    }
+
+    .card.flipped .card-inner,
+    .card.matched .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      border-radius: 13px;
+      border: 1px solid #2b382e;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow: hidden;
+    }
+
+    .back {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      background: linear-gradient(145deg, #17221a, #0e130f);
+    }
+
+    .back .symbol {
+      font-size: 37px;
+      color: var(--verde);
+    }
+
+    .back small {
+      font-size: 10px;
+      color: #8e9d90;
+      letter-spacing: 2px;
+    }
+
+    .front {
+      transform: rotateY(180deg);
+      background: #f0f2ed;
+      color: #111811;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 10px;
+    }
+
+    .shoe {
+      width: 100%;
+      height: 92px;
+      object-fit: contain;
+      filter: drop-shadow(0 5px 5px #0002);
+    }
+
+    .shoe-emoji {
+      font-size: 55px;
+      height: 92px;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .front small {
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .card:hover:not(.matched) .face {
+      border-color: var(--verde);
+    }
+
+    .card.matched .face {
+      border: 2px solid #80ce25;
+    }
+
+    .card.matched .front {
+      background: #e5f9d3;
+    }
+
+    .card:focus-visible {
+      outline: 2px solid var(--verde);
+      outline-offset: 3px;
+      border-radius: 13px;
+    }
+
+    .progress-wrap {
+      margin-top: 22px;
+      background: #1b241d;
+      height: 6px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #progress {
+      height: 100%;
+      width: 0%;
+      background: var(--verde);
+      transition: width 0.3s;
+    }
+
+    footer {
+      text-align: center;
+      color: #758077;
+      font-size: 11px;
+      padding: 35px 12px;
+    }
+
+    footer span {
+      color: var(--verde);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      background: #050806df;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      padding: 35px 25px;
+      border: 1px solid #425833;
+      background: #111914;
+      border-radius: 20px;
+    }
+
+    .modal .trophy {
+      font-size: 55px;
+    }
+
+    .modal h2 {
+      font-size: 30px;
+    }
+
+    .modal p {
+      color: var(--gris);
+      line-height: 1.7;
+    }
+
+    .modal strong {
+      color: var(--verde);
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 18px 5%;
+      }
+
+      .logo {
+        font-size: 18px;
+      }
+
+      .tag {
+        font-size: 9px;
+      }
+
+      main {
+        margin-top: 27px;
+      }
+
+      .stats {
+        gap: 7px;
+      }
+
+      .stat {
+        padding: 14px 4px;
+      }
+
+      .stat strong {
+        font-size: 20px;
+      }
+
+      .stat small {
+        font-size: 8px;
+      }
+
+      .board {
+        gap: 8px;
+      }
+
+      .card {
+        height: 115px;
+      }
+
+      .shoe,
+      .shoe-emoji {
+        height: 65px;
+      }
+
+      .shoe-emoji {
+        font-size: 40px;
+      }
+
+      .front {
+        padding: 5px;
+      }
+
+      .front small {
+        font-size: 8px;
+      }
+
+      .back .symbol {
+        font-size: 30px;
+      }
+
+      .difficulty {
+        padding: 9px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .card {
+        height: 100px;
+      }
+
+      .shoe,
+      .shoe-emoji {
+        height: 55px;
+      }
+
+      .difficulties {
+        gap: 4px;
+      }
+
+      .difficulty {
+        padding: 8px 6px;
+        font-size: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">SNEAKER<span>MATCH.</span></div>
+    <div class="tag">MEMORY CHALLENGE</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">THE SNEAKER GAME</div>
+      <h1>ENCUENTRA EL <span>PAR.</span></h1>
+      <p>
+        Pon a prueba tu memoria. Voltea las tarjetas,
+        encuentra las zapatillas iguales y supera tu récord.
+      </p>
+    </section>
+
+    <section class="stats">
+      <div class="stat">
+        <small>PUNTOS</small>
+        <strong class="green" id="score">0</strong>
+      </div>
+
+      <div class="stat">
+        <small>TIEMPO</small>
+        <strong id="time">00:00</strong>
+      </div>
+
+      <div class="stat">
+        <small>INTENTOS</small>
+        <strong id="moves">0</strong>
+      </div>
+
+      <div class="stat">
+        <small>PAREJAS</small>
+        <strong id="pairs">0/8</strong>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <div class="difficulties">
+        <button class="difficulty" data-level="easy">FÁCIL</button>
+        <button class="difficulty active" data-level="medium">MEDIO</button>
+        <button class="difficulty" data-level="hard">DIFÍCIL</button>
+      </div>
+
+      <button class="restart" id="restart">↻ Reiniciar</button>
+    </section>
+
+    <div id="message" role="status" aria-live="polite">
+      ¡Encuentra todas las parejas!
+    </div>
+
+    <section
+      class="board"
+      id="board"
+      aria-label="Tarjetas de zapatillas">
+    </section>
+
+    <div class="progress-wrap">
+      <div id="progress"></div>
+    </div>
+  </main>
+
+  <footer>
+    HECHO PARA LOS AMANTES DE LAS <span>ZAPATILLAS.</span>
+  </footer>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="trophy">🏆</div>
+      <h2 id="modalTitle">¡LO LOGRASTE!</h2>
+      <p id="result"></p>
+      <button class="restart" id="playAgain">
+        JUGAR OTRA VEZ ↻
+      </button>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    // Imágenes de las zapatillas.
+    // Guarda las imágenes en una carpeta llamada "imagenes".
+
+    const sneakers = [
+      {
+        name: "JORDAN ROJAS",
+        image: "https://fershopctg.com/cdn/shop/files/9b5ebad0-c511-4396-b7c9-a5a8481c5563.jpg?v=1698439806&width=1445",
+        emoji: "",
+        color: "#e53935"
+      },
+      {
+        name: "NIKE BLANCAS",
+        image: "https://www.tennispremium.co/cdn/shop/files/660B2D9F-433B-41F0-A8C4-B27206860382.jpg?v=1712689554",
+        emoji: "",
+        color: "#eeeeee"
+      },
+      {
+        name: "ADIDAS NEGRAS",
+        image: "https://www.tennispremium.co/cdn/shop/files/IMG_7237.jpg?v=1715299865&width=1445",
+        emoji: "",
+        color: "#222222"
+      },
+      {
+        name: "AIR MAX",
+        image: "https://www.tennispremium.co/cdn/shop/files/CEB570F5-5F12-455C-AC17-D587D8B5A829.jpg?v=1712689503&width=1946",
+        emoji: "",
+        color: "#2196f3"
+      },
+      {
+        name: "NEW BALANCE",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdX6Bgs_OoJ1Ufwczc0WvFHkFESvjf0H6-x_rASWeAIQ&s=10",
+        emoji: "",
+        color: "#78909c"
+      },
+      {
+        name: "PUMA",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGZXAu0IvjT_LiAzdnDy4q7C36lZmWMFYtUheA0sB-vQRmmoVrUUgcrkj3&s=10",
+        emoji: "",
+        color: "#111111"
+      },
+      {
+        name: "NIKE AZULES",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQy-_JT6JVxnUpup-K74gC3p18N3x31kwuKe-ZG83EmRg&s=10",
+        emoji: "",
+        color: "#1976d2"
+      },
+      {
+        name: "JORDAN BLANCAS",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSK3m7c7VZwEnKyMt1ScvgiE2L67-_qmMX1jBnGjafiN4B2AnK2pCMSRejU&s=10",
+        emoji: "",
+        color: "#eeeeee"
+      },
+      {
+        name: "RUNNER",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRufDO_Zokjgpf_XkcPdeeQGMcKsWFdHjjIHL0aBUI6pEUBuMS7VvB0Sg&s=10",
+        emoji: "",
+        color: "#43a047"
+      },
+      {
+        name: "RETRO",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ30RZsgSK2yikGqIOUcU9M3U3IdsVbdkPnC5wDrEVUjFmf-a4cby8pPHo&s=10",
+        emoji: "",
+        color: "#ff9800"
+      },
+      {
+        name: "URBAN",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTC8KR-Y8rgsozZC0DQiNDrRlgE25VEnKDnsBKUlc1SLz95Pd1jR6EWcwct&s=10",
+        emoji: "",
+        color: "#757575"
+      },
+      {
+        name: "SPEED",
+        image: "https://www.flash-co.store/cdn/shop/files/On_CIoud_white_black.png?v=1791020899",
+        emoji: "",
+        color: "#8e24aa"
+      }
+    ];
+
+    // Configuración de los niveles.
+    const levels = {
+      easy: {
+        pairs: 6,
+        cols: 4,
+        time: 90
+      },
+      medium: {
+        pairs: 8,
+        cols: 4,
+        time: 120
+      },
+      hard: {
+        pairs: 12,
+        cols: 4,
+        time: 150
+      }
+    };
+
+    // Elementos del HTML.
+    const board = document.getElementById("board");
+    const scoreEl = document.getElementById("score");
+    const timeEl = document.getElementById("time");
+    const movesEl = document.getElementById("moves");
+    const pairsEl = document.getElementById("pairs");
+    const message = document.getElementById("message");
+    const progress = document.getElementById("progress");
+    const overlay = document.getElementById("overlay");
+    const result = document.getElementById("result");
+    const modalTitle = document.getElementById("modalTitle");
+
+    // Variables del juego.
+    let level = "medium";
+    let deck = [];
+    let opened = [];
+    let matched = 0;
+    let moves = 0;
+    let score = 0;
+    let seconds = levels[level].time;
+    let timer = null;
+    let started = false;
+    let locked = false;
+    let roundId = 0;
+
+    // Mezcla aleatoriamente las tarjetas.
+    function shuffle(array) {
+      const copy = [...array];
+
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+
+      return copy;
+    }
+
+    // Convierte los segundos al formato minutos:segundos.
+    function formatTime(value) {
+      const safeValue = Math.max(0, value);
+      const minutes = Math.floor(safeValue / 60);
+      const remainingSeconds = safeValue % 60;
+
+      return String(minutes).padStart(2, "0") +
+        ":" +
+        String(remainingSeconds).padStart(2, "0");
+    }
+
+    // Actualiza los puntos, el tiempo y las parejas.
+    function updateStats() {
+      scoreEl.textContent = String(score);
+      timeEl.textContent = formatTime(seconds);
+      movesEl.textContent = String(moves);
+
+      pairsEl.textContent =
+        `${matched}/${levels[level].pairs}`;
+
+      progress.style.width =
+        `${(matched / levels[level].pairs) * 100}%`;
+    }
+
+    // Detiene el temporizador.
+    function stopTimer() {
+      if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    // Inicia el tiempo cuando se voltea la primera tarjeta.
+    function startTimer() {
+      if (started || locked) {
+        return;
+      }
+
+      started = true;
+
+      timer = setInterval(() => {
+        seconds = Math.max(0, seconds - 1);
+        updateStats();
+
+        if (seconds === 0) {
+          stopTimer();
+          locked = true;
+          message.textContent = "¡Se acabó el tiempo!";
+          finish(false);
+        }
+      }, 1000);
+    }
+
+    // Crea una tarjeta con su imagen.
+    function makeCard(item, index, round) {
+      const card = document.createElement("button");
+
+      card.type = "button";
+      card.className = "card";
+      card.setAttribute("aria-label", "Tarjeta oculta");
+      card.dataset.index = String(index);
+
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="face back">
+            <div class="symbol">✳</div>
+            <small>SNEAKER</small>
+          </div>
+
+          <div class="face front">
+            <img
+              class="shoe"
+              src="${item.image}"
+              alt="${item.name}"
+            >
+
+            <div
+              class="shoe-emoji"
+              aria-hidden="true"
+              style="display: none; color: ${item.color}">
+              ${item.emoji}
+            </div>
+
+            <small>${item.name}</small>
+          </div>
+        </div>
+      `;
+
+      // Si no encuentra la imagen, muestra un emoji.
+      const image = card.querySelector(".shoe");
+      const emoji = card.querySelector(".shoe-emoji");
+
+      image.addEventListener("error", () => {
+        image.style.display = "none";
+        emoji.style.display = "flex";
+      }, { once: true });
+
+      card.addEventListener("click", () => {
+        if (round !== roundId) {
+          return;
+        }
+
+        flipCard(card, item, round);
+      });
+
+      return card;
+    }
+
+    // Inicia una partida nueva.
+    function newGame(newLevel = level) {
+      roundId++;
+
+      stopTimer();
+
+      level = Object.prototype.hasOwnProperty.call(
+        levels,
+        newLevel
+      ) ? newLevel : "medium";
+
+      opened = [];
+      matched = 0;
+      moves = 0;
+      score = 0;
+      started = false;
+      locked = false;
+      seconds = levels[level].time;
+
+      overlay.classList.remove("show");
+
+      modalTitle.textContent = "¡LO LOGRASTE!";
+
+      // Actualiza el botón del nivel seleccionado.
+      document.querySelectorAll(".difficulty").forEach((button) => {
+        button.classList.toggle(
+          "active",
+          button.dataset.level === level
+        );
+      });
+
+      // Selecciona las zapatillas necesarias.
+      const chosen = shuffle(sneakers).slice(
+        0,
+        levels[level].pairs
+      );
+
+      // Duplica cada zapatilla para crear las parejas.
+      deck = shuffle(
+        chosen.flatMap((item, pairId) => [
+          { ...item, pairId },
+          { ...item, pairId }
+        ])
+      );
+
+      board.style.gridTemplateColumns =
+        `repeat(${levels[level].cols}, minmax(0, 1fr))`;
+
+      board.innerHTML = "";
+
+      const currentRound = roundId;
+
+      deck.forEach((item, index) => {
+        board.appendChild(
+          makeCard(item, index, currentRound)
+        );
+      });
+
+      message.textContent = "¡Encuentra todas las parejas!";
+      message.className = "";
+
+      updateStats();
+    }
+
+    // Voltea una tarjeta y comprueba si coincide con otra.
+    function flipCard(card, item, round) {
+      if (
+        round !== roundId ||
+        locked ||
+        card.classList.contains("flipped") ||
+        card.classList.contains("matched")
+      ) {
+        return;
+      }
+
+      startTimer();
+
+      card.classList.add("flipped");
+      card.setAttribute("aria-label", item.name);
+
+      opened.push({ card, item });
+
+      // Espera a que se seleccione la segunda tarjeta.
+      if (opened.length < 2) {
+        return;
+      }
+
+      moves++;
+      locked = true;
+
+      const [first, second] = opened;
+
+      // Comprueba si las tarjetas forman una pareja.
+      if (first.item.pairId === second.item.pairId) {
+        matched++;
+        score += 100;
+
+        message.textContent =
+          "¡Excelente! Encontraste un par.";
+
+        message.className = "good";
+
+        first.card.classList.add("matched");
+        second.card.classList.add("matched");
+
+        first.card.setAttribute(
+          "aria-label",
+          "Pareja encontrada"
+        );
+
+        second.card.setAttribute(
+          "aria-label",
+          "Pareja encontrada"
+        );
+
+        opened = [];
+        locked = false;
+
+        updateStats();
+
+        // Comprueba si se encontraron todas las parejas.
+        if (matched === levels[level].pairs) {
+          finish(true);
+        }
+
+        return;
+      }
+
+      // Resta puntos si las tarjetas son diferentes.
+      score = Math.max(0, score - 10);
+
+      message.textContent =
+        "No son iguales. ¡Inténtalo otra vez!";
+
+      message.className = "";
+
+      updateStats();
+
+      const thisRound = roundId;
+
+      // Vuelve a ocultar las tarjetas después de un momento.
+      setTimeout(() => {
+        if (thisRound !== roundId) {
+          return;
+        }
+
+        first.card.classList.remove("flipped");
+        second.card.classList.remove("flipped");
+
+        first.card.setAttribute(
+          "aria-label",
+          "Tarjeta oculta"
+        );
+
+        second.card.setAttribute(
+          "aria-label",
+          "Tarjeta oculta"
+        );
+
+        opened = [];
+        locked = false;
+      }, 850);
+    }
+
+    // Finaliza la partida.
+    function finish(won) {
+      stopTimer();
+      locked = true;
+
+      if (won) {
+        score += seconds * 5;
+
+        updateStats();
+
+        message.textContent =
+          "¡Eres un experto en zapatillas!";
+
+        message.className = "good";
+
+        modalTitle.textContent = "¡LO LOGRASTE!";
+
+        result.innerHTML = `
+          Terminaste en
+          <strong>${formatTime(levels[level].time - seconds)}</strong>.<br>
+          Puntuación final: <strong>${score}</strong><br>
+          Intentos: <strong>${moves}</strong>
+        `;
+      } else {
+        modalTitle.textContent = "¡TIEMPO AGOTADO!";
+
+        result.innerHTML = `
+          Puntuación: <strong>${score}</strong><br>
+          Parejas encontradas: <strong>${matched}</strong>
+          de <strong>${levels[level].pairs}</strong>.<br>
+          ¡Intenta superar tu marca!
+        `;
+      }
+
+      overlay.classList.add("show");
+    }
+
+    // Cambia el nivel de dificultad.
+    document.querySelectorAll(".difficulty").forEach((button) => {
+      button.addEventListener("click", () => {
+        newGame(button.dataset.level);
+      });
+    });
+
+    // Reinicia la partida actual.
+    document.getElementById("restart").addEventListener(
+      "click",
+      () => newGame()
+    );
+
+    // Permite jugar otra vez desde la ventana final.
+    document.getElementById("playAgain").addEventListener(
+      "click",
+      () => newGame()
+    );
+
+    // Inicia el juego al cargar la página.
+    newGame();
+  </script>
+</body>
+</html>
